@@ -7,6 +7,7 @@ a
 *.mp4
 
 ./a
+./ff4
 
 # Object files
 *.o
