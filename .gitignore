@@ -1,5 +1,12 @@
+a
+
 # Prerequisites
 *.d
+
+# mp4
+*.mp4
+
+./a
 
 # Object files
 *.o
