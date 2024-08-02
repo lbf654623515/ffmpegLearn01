@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "avformat.h": "c",
+        "timestamp.h": "c",
+        "avutil.h": "c"
+    }
+}

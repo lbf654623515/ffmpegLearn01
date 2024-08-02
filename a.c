@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <libavcodec/avcodec.h>
 #include <libavutil/timestamp.h>
+#include <libavutil/avutil.h>
 #include <libavformat/avformat.h>
 
 // ffmpeg -re -i tnhaoxc.flv -c copy -f flv rtmp://192.168.0.104/live
@@ -183,7 +184,7 @@ int main(int argc, char **argv){
 
     // 3.5 写输出文件尾
     av_write_trailer(ofmt_ctx);
-
+    printf("处理完成！\n");
 end:
     avformat_close_input(&ifmt_ctx);
 
