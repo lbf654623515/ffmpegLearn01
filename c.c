@@ -8,10 +8,15 @@
 // ./streamer rtmp://192.168.0.104/live tnhaoxc.flv
 int main(int argc, char **argv)
 {
-    AVOutputFormat *ofmt = NULL;
-    AVFormatContext *ifmt_ctx = NULL, *ofmt_ctx = NULL;
-    AVPacket pkt;
+
     const char *in_filename, *out_filename;
+
+    AVFormatContext *ifmt_ctx = NULL;
+
+    AVFormatContext *ofmt_ctx = NULL;
+    AVOutputFormat *ofmt = NULL;
+
+    AVPacket pkt;
     int ret, i;
     int stream_index = 0;
     int *stream_mapping = NULL;
@@ -50,12 +55,10 @@ int main(int argc, char **argv)
     if (strstr(out_filename, "rtmp://") != NULL) {
         push_stream = true;
         ofmt_name = "flv";
-    }
-    else if (strstr(out_filename, "udp://") != NULL) {
+    } else if (strstr(out_filename, "udp://") != NULL) {
         push_stream = true;
         ofmt_name = "mpegts";
-    }
-    else {
+    } else {
         push_stream = false;
         ofmt_name = NULL;
     }

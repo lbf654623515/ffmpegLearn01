@@ -2,13 +2,16 @@
     // 使用 IntelliSense 了解相关属性。 
     // 悬停以查看现有属性的描述。
     // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+    // http://127.0.0.1:8090/control/get?room=movie                                     //创建
+    // rtmp://127.0.0.1:1935/live/movie                                                 //播放
+    // rtmp://127.0.0.1:1935/live/rfBd56ti2SMtYvSgD5xAV0YU99zampta7Z7S575KLkIZ9PYk      //推流
     "version": "0.2.0",
     "configurations": [{
         "name": "(gdb) 启动",
         "type": "cppdbg",
         "request": "launch",
         "program": "${fileDirname}/${fileBasenameNoExtension}",
-        "args": ["http://127.0.0.1:18080/test","a.mp4"],
+        "args": ["a.mp4","rtmp://127.0.0.1:1935/live/rfBd56ti2SMtYvSgD5xAV0YU99zampta7Z7S575KLkIZ9PYk"],
         "stopAtEntry": false,
         "cwd": "${fileDirname}",
         "environment": [],
