@@ -19,8 +19,8 @@ int main(int argc, char **argv)
     AVPacket pkt;
     int ret, i;
     int stream_index = 0;
-    int *stream_mapping = NULL;
-    int stream_mapping_size = 0;
+    int *stream_mapping = NULL;     //有效流的索引数组(指针形式)
+    int stream_mapping_size = 0;    //码流的总数
 
     if (argc < 3) {
         printf("usage: %s input output\n"
