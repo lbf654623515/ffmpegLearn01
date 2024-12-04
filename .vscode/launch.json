@@ -2,13 +2,14 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "(gdb) 启动",
+      "name": "(gdb) 启动调试",
       "type": "cppdbg",
+      "preLaunchTask": "C/C++: gcc 生成活动文件",
       "request": "launch",
       "program": "${fileDirname}/${fileBasenameNoExtension}",
       "args": [
-        "a.mp4",
-        "rtmp://127.0.0.1:1935/live/rfBd56ti2SMtYvSgD5xAV0YU99zampta7Z7S575KLkIZ9PYk"
+        "http://192.168.1.25:8080/a",
+        "./a.mkv"
       ],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",
@@ -24,25 +25,6 @@
         {
           "description": "将反汇编风格设置为 Intel",
           "text": "-gdb-set disassembly-flavor intel",
-          "ignoreFailures": true
-        }
-      ]
-    },
-    {
-      "name": "C/C++ Runner: Debug Session",
-      "type": "cppdbg",
-      "request": "launch",
-      "args": [],
-      "stopAtEntry": false,
-      "externalConsole": false,
-      "cwd": "/home/terry/source/cSource/ffmpegLearn01",
-      "program": "/home/terry/source/cSource/ffmpegLearn01/build/Debug/outDebug",
-      "MIMode": "gdb",
-      "miDebuggerPath": "gdb",
-      "setupCommands": [
-        {
-          "description": "Enable pretty-printing for gdb",
-          "text": "-enable-pretty-printing",
           "ignoreFailures": true
         }
       ]
