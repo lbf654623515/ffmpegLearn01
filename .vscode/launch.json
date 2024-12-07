@@ -8,8 +8,8 @@
       "request": "launch",
       "program": "${fileDirname}/${fileBasenameNoExtension}",
       "args": [
-        "http://192.168.1.25:8080/a",
-        "./a.mkv"
+        "rtsp://127.0.0.1:15555/vod",
+        "./a.mp4"
       ],
       "stopAtEntry": false,
       "cwd": "${fileDirname}",

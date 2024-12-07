@@ -16,7 +16,7 @@
 int main(int argc, char **argv){
     AVOutputFormat *o_fmt = NULL;
     AVFormatContext *i_fmt_ctx = NULL, *o_fmt_ctx = NULL;
-    AVPacket pkt;
+
     const char *in_filename, *out_filename;
     int ret, i;
     int stream_index = 0;
@@ -35,9 +35,9 @@ int main(int argc, char **argv){
         return 1;
     }
     const char * ff_version = av_version_info();// 打印ffmpeg版本号
-    printf("ffmpeg_vserion:%s\n",ff_version);
+    printf("av_version_info:%s\n",ff_version);
     unsigned _version=avformat_version();// 打印ffmpeg中格式化模块的版本号
-    printf("vserion:%d\n",_version);
+    printf("avformat_version:%d\n",_version);
 
     in_filename  = argv[1];//输入流媒体地址
     out_filename = argv[2];//输出流媒体文件名
@@ -59,16 +59,16 @@ int main(int argc, char **argv){
 
     // 2. 打开输出
     // 2.1 分配输出ctx
-    bool push_stream = false;
+    bool is_net_output_push_stream = false;
     char *o_fmt_name = NULL;
     if (strstr(out_filename, "rtmp://") != NULL) {
-        push_stream = true;
+        is_net_output_push_stream = true;
         o_fmt_name = "flv";
     } else if (strstr(out_filename, "udp://") != NULL) {
-        push_stream = true;
+        is_net_output_push_stream = true;
         o_fmt_name = "mpegts";
     } else {
-        push_stream = false;
+        is_net_output_push_stream = false;
         o_fmt_name = NULL;
     }
     avformat_alloc_output_context2(&o_fmt_ctx, NULL, o_fmt_name, out_filename);
@@ -87,7 +87,6 @@ int main(int argc, char **argv){
 
     o_fmt = o_fmt_ctx->oformat;
 
-    AVRational frame_rate;
     double duration;
 
     for (i = 0; i < i_fmt_ctx->nb_streams; i++) {
@@ -102,14 +101,15 @@ int main(int argc, char **argv){
             continue;
         }
 
-        if (push_stream && (in_codecpar->codec_type == AVMEDIA_TYPE_VIDEO)) {
+        if (is_net_output_push_stream && (in_codecpar->codec_type == AVMEDIA_TYPE_VIDEO)) {
+            AVRational frame_rate;
             frame_rate = av_guess_frame_rate(i_fmt_ctx, in_stream, NULL);
-            duration = (frame_rate.num && frame_rate.den ? av_q2d((AVRational){frame_rate.den, frame_rate.num}) : 0);
+            duration = (frame_rate.num && frame_rate.den ? av_q2d((AVRational){frame_rate.num, frame_rate.den}) : 0);
         }
 
         stream_mapping[i] = stream_index++;
 
-        // 2.2 将一个新流(out_stream)添加到输出文件(ofmt_ctx)
+        // 2.2 将一个新流(out_stream)添加到输出文件(o_fmt_ctx)
         out_stream = avformat_new_stream(o_fmt_ctx, NULL);
         if (!out_stream) {
             printf("Failed allocating output stream\n");
@@ -127,7 +127,7 @@ int main(int argc, char **argv){
     }
     av_dump_format(o_fmt_ctx, 0, out_filename, 1);
 
-    if (!(o_fmt->flags & AVFMT_NOFILE)) {    // TODO: 研究AVFMT_NOFILE标志
+    if (!(o_fmt->flags & AVFMT_NOFILE)) {    // TODO: 如果输出格式是输出到文件
         // 2.4 创建并初始化一个AVIOContext，用以访问URL(out_filename)指定的资源
         ret = avio_open(&o_fmt_ctx->pb, out_filename, AVIO_FLAG_WRITE);
         if (ret < 0) {
@@ -146,7 +146,7 @@ int main(int argc, char **argv){
 
     while (1) {
         AVStream *in_stream, *out_stream;
-
+        AVPacket pkt;   // 存储一个packet的结构体
         // 3.2 从输出流读取一个packet
         ret = av_read_frame(i_fmt_ctx, &pkt);
         if (ret < 0) {
@@ -155,19 +155,19 @@ int main(int argc, char **argv){
 
         in_stream  = i_fmt_ctx->streams[pkt.stream_index];
         if (pkt.stream_index >= stream_mapping_size ||
-            stream_mapping[pkt.stream_index] < 0) {
+            stream_mapping[pkt.stream_index] < 0) { // 如果这个包是一个无效的包，跳过
             av_packet_unref(&pkt);
             continue;
         }
 
         int codec_type = in_stream->codecpar->codec_type;
-        if (push_stream && (codec_type == AVMEDIA_TYPE_VIDEO)) {
+        if (is_net_output_push_stream && (codec_type == AVMEDIA_TYPE_VIDEO)) {
             av_usleep((int64_t)(duration*AV_TIME_BASE));
         }
 
         pkt.stream_index = stream_mapping[pkt.stream_index];
         out_stream = o_fmt_ctx->streams[pkt.stream_index];
-
+        printf("更新之前pts:% 12.ld,dts:% 12.ld\n",pkt.pts,pkt.dts);
         /* copy packet */
         // 3.3 更新packet中的pts和dts
         // 关于AVStream.time_base(容器中的time_base)的说明：
@@ -176,6 +176,7 @@ int main(int argc, char **argv){
         // AVPacket.pts和AVPacket.dts的单位是AVStream.time_base，不同的封装格式AVStream.time_base不同
         // 所以输出文件中，每个packet需要根据输出封装格式重新计算pts和dts
         av_packet_rescale_ts(&pkt, in_stream->time_base, out_stream->time_base);
+        printf("更新之后pts:% 12.ld,dts:% 12.ld\n",pkt.pts,pkt.dts);
         pkt.pos = -1;
 
         // 3.4 将packet写入输出
